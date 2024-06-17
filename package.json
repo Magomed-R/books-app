@@ -1,0 +1,25 @@
+{
+    "name": "books-app",
+    "version": "1.0.0",
+    "description": "Books App",
+    "main": "app.ts",
+    "scripts": {
+        "start:dev": "dotenv -e .dev.env node src/app.ts",
+        "start:prod": "dotenv -e .prod.env node dist/app.js",
+        "migrate:dev": "dotenv -e .dev.env prisma migrate dev",
+        "migrate:prod": "dotenv -e .prod.env prisma migrate dev"
+    },
+    "keywords": [],
+    "author": "Magomed-R",
+    "license": "ISC",
+    "dependencies": {
+        "@prisma/client": "5.15.0",
+        "dotenv-cli": "^7.4.2",
+        "express": "^4.19.2",
+        "jsonwebtoken": "^9.0.2",
+        "prisma": "^5.15.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.14.2"
+    }
+}
