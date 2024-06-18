@@ -133,12 +133,14 @@ UsersRouter.get("/verify", async (req, res) => {
 });
 
 UsersRouter.get("/me", AuthMiddleware, async (req, res) => {
-    const cachedUser = await redis.get("me");
+    const id = req.body.user.id;
+
+    const cachedUser = await redis.get(`me_${id}`);
 
     if (cachedUser) return res.status(200).json(JSON.parse(cachedUser));
 
     const user = await prisma.user.findUnique({
-        where: { id: req.body.user.id },
+        where: { id },
         select: {
             username: true,
             password: false,
@@ -149,12 +151,14 @@ UsersRouter.get("/me", AuthMiddleware, async (req, res) => {
         },
     });
 
-    await redis.setEx("me", 3600, JSON.stringify(user));
+    await redis.setEx(`me_${id}`, 3600, JSON.stringify(user));
 
     return res.status(200).json(user);
 });
 
 UsersRouter.put("/:id/role", AuthMiddleware, async (req, res) => {
+    const id = Number(req.params.id);
+
     const admin = await prisma.user.findUnique({
         where: {
             id: req.body.user.id,
@@ -164,9 +168,7 @@ UsersRouter.put("/:id/role", AuthMiddleware, async (req, res) => {
     if (admin!.role < 2) return res.status(403).json({ message: "You are not an administrator" });
 
     let user = await prisma.user.findUnique({
-        where: {
-            id: Number(req.params.id),
-        },
+        where: { id },
         select: {
             username: true,
             password: false,
@@ -180,9 +182,7 @@ UsersRouter.put("/:id/role", AuthMiddleware, async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
 
     user = await prisma.user.update({
-        where: {
-            id: Number(req.params.id),
-        },
+        where: { id },
         data: {
             role: 2,
         },
@@ -195,6 +195,8 @@ UsersRouter.put("/:id/role", AuthMiddleware, async (req, res) => {
             verifid: true,
         },
     });
+
+    await redis.del(`me_${id}`);
 
     return res.status(200).json(user);
 });
