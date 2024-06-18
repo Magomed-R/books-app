@@ -15,9 +15,9 @@ const UsersRouter = express.Router();
 UsersRouter.post("/register", async (req, res) => {
     const { username, password, email } = req.body;
 
-    if (!username || !password || !email) return res.status(403).json({ message: "All fields are required" });
+    if (!username || !password || !email) return res.status(400).json({ message: "All fields are required" });
 
-    if (!/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email)) return res.status(400).json({ message: "Invalid mail" });
+    if (!/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email)) return res.status(403).json({ message: "Invalid mail" });
 
     const userByEmail = await prisma.user.findUnique({
         where: {
@@ -68,7 +68,7 @@ UsersRouter.post("/register", async (req, res) => {
             },
         });
 
-        return res.status(400).json({ message: "Invalid mail" });
+        return res.status(403).json({ message: "Invalid mail" });
     }
 
     return res.status(201).json({
