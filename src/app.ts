@@ -15,6 +15,4 @@ app.use(bodyParser.json());
 app.use("/books", BooksRouter);
 app.use("/users", UsersRouter);
 
-app.listen(PORT, () =>
-    console.log(green.bold(`Server started on port ${PORT}`))
-);
+app.listen(PORT, () => console.log(green.bold(`Server started on port ${PORT}`)));

@@ -1,0 +1,30 @@
+services:
+  app:
+    image: books-app
+    networks:
+      - general
+    ports:
+      - "4000:3000"
+  db_postgres:
+    image: postgres
+    container_name: db_postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - general
+    env_file:
+      - postgres.env
+  db_redis:
+    image: redis
+    container_name: db_redis
+    networks:
+      - general
+    ports:
+      - "6380:6379"
+volumes:
+  db-data:
+    external: true
+networks:
+  general: {}
