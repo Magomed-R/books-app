@@ -16,9 +16,16 @@ model Book {
 }
 
 model User {
-    id       Int    @id @default(autoincrement())
-    username String
+    id       Int     @id @default(autoincrement())
+    username String  @unique
     password String
-    email    String @unique
-    role     Int    @default(1)
+    email    String  @unique
+    role     Int     @default(1)
+    verifid  Boolean @default(false)
+}
+
+model CheckMail {
+    id     Int    @id @default(autoincrement())
+    userId Int
+    code   String
 }
