@@ -1,6 +1,6 @@
 import express from "express";
 
-import prisma from "../client";
+import prisma from "../Clients/PrismaClient";
 import AuthMiddleware from "../Middlewares/AuthMiddleware";
 
 const BooksRouter = express.Router();

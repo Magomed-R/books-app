@@ -3,9 +3,12 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
 
-import prisma from "../client";
-import mailer from "../mailer";
+import prisma from "../Clients/PrismaClient";
+import mailer from "../Clients/MailerClient";
+import redis from "../Clients/RedisClient";
+
 import getText from "../entities/mail-text";
+
 import AuthMiddleware from "../Middlewares/AuthMiddleware";
 
 const { JWT_SECRET, MAIL_USER, DOMAIN } = process.env;
@@ -17,7 +20,12 @@ UsersRouter.post("/register", async (req, res) => {
 
     if (!username || !password || !email) return res.status(400).json({ message: "All fields are required" });
 
-    if (!/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email)) return res.status(403).json({ message: "Invalid mail" });
+    if (
+        !/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+            email
+        )
+    )
+        return res.status(403).json({ message: "Invalid mail" });
 
     const userByEmail = await prisma.user.findUnique({
         where: {
@@ -125,6 +133,10 @@ UsersRouter.get("/verify", async (req, res) => {
 });
 
 UsersRouter.get("/me", AuthMiddleware, async (req, res) => {
+    const cachedUser = await redis.get("me");
+
+    if (cachedUser) return res.status(200).json(JSON.parse(cachedUser));
+
     const user = await prisma.user.findUnique({
         where: { id: req.body.user.id },
         select: {
@@ -136,6 +148,8 @@ UsersRouter.get("/me", AuthMiddleware, async (req, res) => {
             verifid: true,
         },
     });
+
+    await redis.setEx("me", 3600, JSON.stringify(user));
 
     return res.status(200).json(user);
 });
